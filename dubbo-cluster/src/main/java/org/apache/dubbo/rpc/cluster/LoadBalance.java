@@ -33,6 +33,9 @@ import java.util.List;
  *
  * @see org.apache.dubbo.rpc.cluster.Cluster#join(Directory)
  */
+
+// SPI 中填写，表示默认加载的实现类的别名（random）
+// dubbo-cluster/src/main/resources/META-INF/dubbo/internal/org.apache.dubbo.rpc.cluster.LoadBalance 中定义改别名
 @SPI(RandomLoadBalance.NAME)
 public interface LoadBalance {
 

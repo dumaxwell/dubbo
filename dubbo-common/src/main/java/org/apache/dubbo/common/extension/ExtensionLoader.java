@@ -59,6 +59,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PRE
  * <li>default extension is an adaptive instance</li>
  * </ul>
  *
+ * 类似于Java SPI的ServiceLoader，负责扩展的加载和生命周期维护。
+ *
+ * 目标：
+ * 1. dubbo SPI 加载实例过程，以及关键细节
+ * 2. Ioc是如何实现
+ * 3. AOP如何实现
+ *
  * @see <a href="http://java.sun.com/j2se/1.5.0/docs/guide/jar/jar.html#Service%20Provider">Service Provider in Java 5</a>
  * @see org.apache.dubbo.common.extension.SPI
  * @see org.apache.dubbo.common.extension.Adaptive
@@ -76,25 +83,38 @@ public class ExtensionLoader<T> {
 
     private static final Pattern NAME_SEPARATOR = Pattern.compile("\\s*[,]+\\s*");
 
+    // static 变量
+    // 存放 Interface 类对象，对应的 ExtensionLoad 对象
+    // （key: interface class name,value: ExtensionLoad<interface>）
+    // key 是META-INF/*/下的文件名，value 是文件内的行。todo 待验证，尤其是使用spring时
+    // 直接 new ExtensionLoad<T> 出来，没有其他特殊逻辑
     private static final ConcurrentMap<Class<?>, ExtensionLoader<?>> EXTENSION_LOADERS = new ConcurrentHashMap<>();
 
+    // static 变量
     private static final ConcurrentMap<Class<?>, Object> EXTENSION_INSTANCES = new ConcurrentHashMap<>();
 
+    // 接口的类实例
     private final Class<?> type;
 
     private final ExtensionFactory objectFactory;
 
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<>();
 
+    // 存放实现类的类实例
+    // key: 子类名字，value: 子类的类实例
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<>();
 
     private final Map<String, Object> cachedActivates = new ConcurrentHashMap<>();
+    // 存放实现类实例
+    // key: 子类名字，value: 子类实例
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<>();
     private final Holder<Object> cachedAdaptiveInstance = new Holder<>();
+    // 自适应扩展的实现类，只能有一个？？？
     private volatile Class<?> cachedAdaptiveClass = null;
     private String cachedDefaultName;
     private volatile Throwable createAdaptiveInstanceError;
 
+    // todo 这里wrapperClass，是什么意思
     private Set<Class<?>> cachedWrapperClasses;
 
     private Map<String, IllegalStateException> exceptions = new ConcurrentHashMap<>();
@@ -108,6 +128,8 @@ public class ExtensionLoader<T> {
         return type.isAnnotationPresent(SPI.class);
     }
 
+    // 第一步，获取实例。
+    // 整个流程的入口，获取该对象，才能调用 getExtension()
     @SuppressWarnings("unchecked")
     public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
         if (type == null) {
@@ -304,6 +326,7 @@ public class ExtensionLoader<T> {
     private Holder<Object> getOrCreateHolder(String name) {
         Holder<Object> holder = cachedInstances.get(name);
         if (holder == null) {
+            // 实现类实例
             cachedInstances.putIfAbsent(name, new Holder<>());
             holder = cachedInstances.get(name);
         }
@@ -329,6 +352,7 @@ public class ExtensionLoader<T> {
      * Find the extension with the given name. If the specified name is not found, then {@link IllegalStateException}
      * will be thrown.
      */
+    // 第二步，获取实例
     @SuppressWarnings("unchecked")
     public T getExtension(String name) {
         if (StringUtils.isEmpty(name)) {
@@ -343,6 +367,7 @@ public class ExtensionLoader<T> {
             synchronized (holder) {
                 instance = holder.get();
                 if (instance == null) {
+                    // 没有实现类实例，就去创建一个
                     instance = createExtension(name);
                     holder.set(instance);
                 }
@@ -524,6 +549,8 @@ public class ExtensionLoader<T> {
     private T createExtension(String name) {
         // throws any possible exception in loading period.
         findException(name);
+        // 从配置文件中加载所有的拓展类，可得到“配置项名称”到“配置类”的映射关系表
+        // 获取 name 对应实现类的类实例
         Class<?> clazz = getExtensionClasses().get(name);
         if (clazz == null) {
             throw noExtensionException(name);
@@ -531,12 +558,14 @@ public class ExtensionLoader<T> {
         try {
             T instance = (T) EXTENSION_INSTANCES.get(clazz);
             if (instance == null) {
+                // todo 实现类的实例，怎么又往这里放了，不是放在 cachedInstances 的么？
                 EXTENSION_INSTANCES.putIfAbsent(clazz, clazz.newInstance());
                 instance = (T) EXTENSION_INSTANCES.get(clazz);
             }
+            // 注入
             injectExtension(instance);
             Set<Class<?>> wrapperClasses = cachedWrapperClasses;
-            if (CollectionUtils.isNotEmpty(wrapperClasses)) {
+            if (CollectionUtils.isNotEmpty(wrapperClasses)) { // TODO: 2019/10/20 AOP的具体体现
                 for (Class<?> wrapperClass : wrapperClasses) {
                     instance = injectExtension((T) wrapperClass.getConstructor(type).newInstance(instance));
                 }
@@ -622,12 +651,14 @@ public class ExtensionLoader<T> {
         return getExtensionClasses().get(name);
     }
 
+    // 用于获取某个接口的所有实现类的类对象
     private Map<String, Class<?>> getExtensionClasses() {
         Map<String, Class<?>> classes = cachedClasses.get();
         if (classes == null) {
             synchronized (cachedClasses) {
                 classes = cachedClasses.get();
                 if (classes == null) {
+                    // 从 META-INF 目录下加载所有实现了该接口的类的类实例
                     classes = loadExtensionClasses();
                     cachedClasses.set(classes);
                 }
@@ -685,6 +716,7 @@ public class ExtensionLoader<T> {
                 urls = ClassLoader.getSystemResources(fileName);
             }
             if (urls != null) {
+                // todo 这里断点看看公司代码是否会加载
                 while (urls.hasMoreElements()) {
                     java.net.URL resourceURL = urls.nextElement();
                     loadResource(extensionClasses, classLoader, resourceURL);
@@ -715,6 +747,7 @@ public class ExtensionLoader<T> {
                                 line = line.substring(i + 1).trim();
                             }
                             if (line.length() > 0) {
+                                // 获得 class 的实例
                                 loadClass(extensionClasses, resourceURL, Class.forName(line, true, classLoader), name);
                             }
                         } catch (Throwable t) {
@@ -730,6 +763,7 @@ public class ExtensionLoader<T> {
         }
     }
 
+    // todo 获取到实现类的实例放到 map 里就好类，为啥还有这么一堆逻辑
     private void loadClass(Map<String, Class<?>> extensionClasses, java.net.URL resourceURL, Class<?> clazz, String name) throws NoSuchMethodException {
         if (!type.isAssignableFrom(clazz)) {
             throw new IllegalStateException("Error occurred when loading extension class (interface: " +
@@ -741,6 +775,7 @@ public class ExtensionLoader<T> {
         } else if (isWrapperClass(clazz)) {
             cacheWrapperClass(clazz);
         } else {
+            // 程序进入此分支，表明 clazz 是一个普通的拓展类
             clazz.getConstructor();
             if (StringUtils.isEmpty(name)) {
                 name = findAnnotationName(clazz);
@@ -802,6 +837,7 @@ public class ExtensionLoader<T> {
     /**
      * cache Adaptive class which is annotated with <code>Adaptive</code>
      */
+    // todo 为啥不能有多个 自适应扩展 的实现类？
     private void cacheAdaptiveClass(Class<?> clazz) {
         if (cachedAdaptiveClass == null) {
             cachedAdaptiveClass = clazz;
@@ -862,17 +898,25 @@ public class ExtensionLoader<T> {
     }
 
     private Class<?> getAdaptiveExtensionClass() {
+        // 通过 SPI 加载所有实现类，如果有 @Adaptive 则放到 cachedAdaptiveClass 变量中
         getExtensionClasses();
         if (cachedAdaptiveClass != null) {
             return cachedAdaptiveClass;
         }
+        // 创建自适应拓展类
         return cachedAdaptiveClass = createAdaptiveExtensionClass();
     }
 
+    // 用于生成自适应拓展类
+    // 该方法首先会生成自适应拓展类的 源码 ，
+    // 然后通过 Compiler 实例（Dubbo 默认使用 javassist 作为编译器）编译源码，得到代理类 Class 实例
     private Class<?> createAdaptiveExtensionClass() {
+        // 构建自适应拓展代码
         String code = new AdaptiveClassCodeGenerator(type, cachedDefaultName).generate();
         ClassLoader classLoader = findClassLoader();
+        // 获取编译器实现类
         org.apache.dubbo.common.compiler.Compiler compiler = ExtensionLoader.getExtensionLoader(org.apache.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();
+        // 编译代码，生成 Class
         return compiler.compile(code, classLoader);
     }
 

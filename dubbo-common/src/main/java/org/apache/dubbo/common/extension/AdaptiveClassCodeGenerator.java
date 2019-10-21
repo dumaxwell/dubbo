@@ -76,6 +76,7 @@ public class AdaptiveClassCodeGenerator {
 
     /**
      * test if given type has at least one method annotated with <code>SPI</code>
+     * 有 SPI 注解的接口，至少要有一个 @Adaptive 注解的方法
      */
     private boolean hasAdaptiveMethod() {
         return Arrays.stream(type.getMethods()).anyMatch(m -> m.isAnnotationPresent(Adaptive.class));
@@ -94,6 +95,11 @@ public class AdaptiveClassCodeGenerator {
         code.append(generatePackageInfo());
         code.append(generateImports());
         code.append(generateClassDeclaration());
+
+        // package com.alibaba.dubbo.rpc;
+        // import com.alibaba.dubbo.common.extension.ExtensionLoader;
+        // public class Protocol$Adaptive implements com.alibaba.dubbo.rpc.Protocol {
+
 
         Method[] methods = type.getMethods();
         for (Method method : methods) {
@@ -132,6 +138,9 @@ public class AdaptiveClassCodeGenerator {
      * generate method not annotated with Adaptive with throwing unsupported exception
      */
     private String generateUnsupported(Method method) {
+        //throw new UnsupportedOperationException(
+        //            "method public abstract void com.alibaba.dubbo.rpc.Protocol.destroy() of
+        //            interface com.alibaba.dubbo.rpc.Protocol is not adaptive method!");
         return String.format(CODE_UNSUPPORTED, method, type.getName());
     }
 
@@ -156,6 +165,7 @@ public class AdaptiveClassCodeGenerator {
     private String generateMethod(Method method) {
         String methodReturnType = method.getReturnType().getCanonicalName();
         String methodName = method.getName();
+        // 函数体
         String methodContent = generateMethodContent(method);
         String methodArgs = generateMethodArguments(method);
         String methodThrows = generateMethodThrows(method);
@@ -195,12 +205,37 @@ public class AdaptiveClassCodeGenerator {
     /**
      * generate method content
      */
+
+
     private String generateMethodContent(Method method) {
+        // 获取方法的 @Adaptive 注解
         Adaptive adaptiveAnnotation = method.getAnnotation(Adaptive.class);
         StringBuilder code = new StringBuilder(512);
         if (adaptiveAnnotation == null) {
+            // 没有，这个函数体就是抛异常的代码
+            // throw new UnsupportedOperationException(
+            // "The method public abstract void org.apache.dubbo.rpc.Protocol.destroy() of
+            // interface org.apache.dubbo.rpc.Protocol is not adaptive method!");
             return generateUnsupported(method);
         } else {
+            //    public org.apache.dubbo.rpc.Exporter export(org.apache.dubbo.rpc.Invoker arg0) throws org.apache.dubbo.rpc.RpcException {
+            //        if (arg0 == null)
+            //            throw new IllegalArgumentException("org.apache.dubbo.rpc.Invoker argument == null");
+            //        if (arg0.getUrl() == null)
+            //            throw new IllegalArgumentException("org.apache.dubbo.rpc.Invoker argument getUrl() == null");
+            //
+            //        org.apache.dubbo.common.URL url = arg0.getUrl();
+            //        String extName = ( url.getProtocol() == null ? "dubbo" : url.getProtocol() );
+            //
+            //        if(extName == null)
+            //            throw new IllegalStateException("Failed to get extension (org.apache.dubbo.rpc.Protocol) name from url (" + url.toString() + ") use keys([protocol])");
+            //
+            //        又是通过 getExtension() 获取实例
+            //        org.apache.dubbo.rpc.Protocol extension = (org.apache.dubbo.rpc.Protocol)
+            //                ExtensionLoader.getExtensionLoader(org.apache.dubbo.rpc.Protocol.class).getExtension(extName);
+            //
+            //        return extension.export(arg0);
+            //    }
             int urlTypeIndex = getUrlTypeIndex(method);
 
             // found parameter in URL type
