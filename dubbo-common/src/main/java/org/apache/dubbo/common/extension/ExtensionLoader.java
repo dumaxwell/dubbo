@@ -62,7 +62,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PRE
  * 类似于Java SPI的ServiceLoader，负责扩展的加载和生命周期维护。
  *
  * getAdaptiveExtension()
- * ——在对接口实例化时调用
+ * ——在对接口实例化时调用，dubbo在该函数中写实现类代码(调用getExtension()方法)，返回该实现类实例；
  * getExtension()
  * ——通过bean名字获取实例时调用
  *
