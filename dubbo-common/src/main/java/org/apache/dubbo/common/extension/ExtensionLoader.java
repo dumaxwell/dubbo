@@ -86,7 +86,7 @@ public class ExtensionLoader<T> {
     // static 变量
     // 存放 Interface 类对象，对应的 ExtensionLoad 对象
     // （key: interface class name,value: ExtensionLoad<interface>）
-    // key 是META-INF/*/下的文件名，value 是文件内的行。todo 待验证，尤其是使用spring时
+    // key 是META-INF/*/下的文件名，value 是文件内的行。
     // 直接 new ExtensionLoad<T> 出来，没有其他特殊逻辑
     private static final ConcurrentMap<Class<?>, ExtensionLoader<?>> EXTENSION_LOADERS = new ConcurrentHashMap<>();
 
@@ -98,6 +98,7 @@ public class ExtensionLoader<T> {
 
     private final ExtensionFactory objectFactory;
 
+    // Map <实现类的类实例，该类的名字>
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<>();
 
     // 存放实现类的类实例
@@ -121,6 +122,8 @@ public class ExtensionLoader<T> {
 
     private ExtensionLoader(Class<?> type) {
         this.type = type;
+        // 任何一个接口在 实例化准备放到 EXTENSION_LOADERS 时，其自适应扩展类都被赋值成了 AdaptiveExtensionFactory（存在 @Adaptive 注解） 的实例。
+        // 该实例用来在注入时，遍历 spring 容器 和 Spi 容器，以寻找要注入的 bean
         objectFactory = (type == ExtensionFactory.class ? null : ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension());
     }
 
@@ -490,6 +493,9 @@ public class ExtensionLoader<T> {
         }
     }
 
+    // 这个函数有2个功能
+    // 当是 ExtensionFactory 的 ExtensionLoad 实例调用时，会返回 AdaptiveExtensionFactory 实例，用以给其他类的注入工厂 objectFactory 赋值
+    // 当是 其他接口 的 ExtensionLoad 实例调用时，会返回 dubbo 写的一个实现类，并用上面的objectFactory注入bean
     @SuppressWarnings("unchecked")
     public T getAdaptiveExtension() {
         Object instance = cachedAdaptiveInstance.get();
@@ -891,6 +897,8 @@ public class ExtensionLoader<T> {
     @SuppressWarnings("unchecked")
     private T createAdaptiveExtension() {
         try {
+            // newInstance()时，会调用构造方法。
+            // ExtensionFactory的构造方法中，又通过dubbo-common/META-INF下的配置加载 AdaptiveExtensionFactory，SpiExtensionFactory
             return injectExtension((T) getAdaptiveExtensionClass().newInstance());
         } catch (Exception e) {
             throw new IllegalStateException("Can't create adaptive extension " + type + ", cause: " + e.getMessage(), e);
