@@ -558,7 +558,7 @@ public class ExtensionLoader<T> {
         try {
             T instance = (T) EXTENSION_INSTANCES.get(clazz);
             if (instance == null) {
-                // todo 实现类的实例，怎么又往这里放了，不是放在 cachedInstances 的么？
+                // 实现类的实例，由此实现单例
                 EXTENSION_INSTANCES.putIfAbsent(clazz, clazz.newInstance());
                 instance = (T) EXTENSION_INSTANCES.get(clazz);
             }
@@ -898,12 +898,13 @@ public class ExtensionLoader<T> {
     }
 
     private Class<?> getAdaptiveExtensionClass() {
+        // 获取某接口下所有实现类的类实例
         // 通过 SPI 加载所有实现类，如果有 @Adaptive 则放到 cachedAdaptiveClass 变量中
         getExtensionClasses();
         if (cachedAdaptiveClass != null) {
             return cachedAdaptiveClass;
         }
-        // 创建自适应拓展类
+        // 如果实现类中没 @Adaptive 注解，dubbo自己写一个，大部分走这个路径
         return cachedAdaptiveClass = createAdaptiveExtensionClass();
     }
 
@@ -913,6 +914,48 @@ public class ExtensionLoader<T> {
     private Class<?> createAdaptiveExtensionClass() {
         // 构建自适应拓展代码
         String code = new AdaptiveClassCodeGenerator(type, cachedDefaultName).generate();
+        // 生成的代码如下
+//        package org.apache.dubbo.rpc;
+//        import org.apache.dubbo.common.extension.ExtensionLoader;
+//        public class Protocol$Adaptive implements org.apache.dubbo.rpc.Protocol {
+//            public void destroy()  {
+//                throw new UnsupportedOperationException("The method public abstract void org.apache.dubbo.rpc.Protocol.destroy() of interface org.apache.dubbo.rpc.Protocol is not adaptive method!");
+//            }
+//            public int getDefaultPort()  {
+//                throw new UnsupportedOperationException("The method public abstract int org.apache.dubbo.rpc.Protocol.getDefaultPort() of interface org.apache.dubbo.rpc.Protocol is not adaptive method!");
+//            }
+//            public org.apache.dubbo.rpc.Exporter export(org.apache.dubbo.rpc.Invoker arg0) throws org.apache.dubbo.rpc.RpcException {
+//                if (arg0 == null)
+//                    throw new IllegalArgumentException("org.apache.dubbo.rpc.Invoker argument == null");
+//                if (arg0.getUrl() == null)
+//                    throw new IllegalArgumentException("org.apache.dubbo.rpc.Invoker argument getUrl() == null");
+//
+//                org.apache.dubbo.common.URL url = arg0.getUrl();
+//
+//                String extName = ( url.getProtocol() == null ? "dubbo" : url.getProtocol() );
+//
+//                if(extName == null)
+//                    throw new IllegalStateException("Failed to get extension (org.apache.dubbo.rpc.Protocol) name from url (" + url.toString() + ") use keys([protocol])");
+//
+//                org.apache.dubbo.rpc.Protocol extension = (org.apache.dubbo.rpc.Protocol)ExtensionLoader.getExtensionLoader(org.apache.dubbo.rpc.Protocol.class).getExtension(extName);
+//
+//                return extension.export(arg0);
+//            }
+//            public org.apache.dubbo.rpc.Invoker refer(java.lang.Class arg0, org.apache.dubbo.common.URL arg1) throws org.apache.dubbo.rpc.RpcException {
+//                if (arg1 == null)
+//                    throw new IllegalArgumentException("url == null");
+//                org.apache.dubbo.common.URL url = arg1;
+//
+//                String extName = ( url.getProtocol() == null ? "dubbo" : url.getProtocol() );
+//
+//                if(extName == null)
+//                    throw new IllegalStateException("Failed to get extension (org.apache.dubbo.rpc.Protocol) name from url (" + url.toString() + ") use keys([protocol])");
+//
+//                org.apache.dubbo.rpc.Protocol extension = (org.apache.dubbo.rpc.Protocol)ExtensionLoader.getExtensionLoader(org.apache.dubbo.rpc.Protocol.class).getExtension(extName);
+//
+//                return extension.refer(arg0, arg1);
+//            }
+//        }
         ClassLoader classLoader = findClassLoader();
         // 获取编译器实现类
         org.apache.dubbo.common.compiler.Compiler compiler = ExtensionLoader.getExtensionLoader(org.apache.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();
