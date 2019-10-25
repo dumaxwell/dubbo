@@ -95,12 +95,15 @@ public class ExtensionLoader<T> {
     // 直接 new ExtensionLoad<T> 出来，没有其他特殊逻辑
     private static final ConcurrentMap<Class<?>, ExtensionLoader<?>> EXTENSION_LOADERS = new ConcurrentHashMap<>();
 
-    // static 变量
+    // Map<实现类的类实例，实现类实例>
+    // static 变量，以实现单例
     private static final ConcurrentMap<Class<?>, Object> EXTENSION_INSTANCES = new ConcurrentHashMap<>();
 
     // 接口的类实例
     private final Class<?> type;
 
+    // 工厂模式
+    // 注入bean时调用getExtension()
     private final ExtensionFactory objectFactory;
 
     // Map <实现类的类实例，该类的名字>
@@ -108,6 +111,7 @@ public class ExtensionLoader<T> {
 
     // 存放实现类的类实例
     // key: 子类名字，value: 子类的类实例
+    // 这里使用使用HashMap(),而非ConcurrentHashMap()。如果这里是有新增，没有修改，只需要add的值尽快让其他线程看到而不用的话，cachedInstances为啥不用
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<>();
 
     private final Map<String, Object> cachedActivates = new ConcurrentHashMap<>();
@@ -115,7 +119,7 @@ public class ExtensionLoader<T> {
     // key: 子类名字，value: 子类实例
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<>();
     private final Holder<Object> cachedAdaptiveInstance = new Holder<>();
-    // 自适应扩展的实现类，只能有一个？？？
+    // 自适应扩展的实现类，只能有一个
     private volatile Class<?> cachedAdaptiveClass = null;
     private String cachedDefaultName;
     private volatile Throwable createAdaptiveInstanceError;
@@ -127,7 +131,7 @@ public class ExtensionLoader<T> {
 
     private ExtensionLoader(Class<?> type) {
         this.type = type;
-        // 任何一个接口在 实例化准备放到 EXTENSION_LOADERS 时，其自适应扩展类都被赋值成了 AdaptiveExtensionFactory（存在 @Adaptive 注解） 的实例。
+        // 任何一个接口在 实例化准备放到 EXTENSION_LOADERS 时，其自适应扩展类都被赋值成了 AdaptiveExtensionFactory（该类存在 @Adaptive 注解） 的实例。
         // 该实例用来在注入时，遍历 spring 容器 和 Spi 容器，以寻找要注入的 bean
         objectFactory = (type == ExtensionFactory.class ? null : ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension());
     }
@@ -499,8 +503,8 @@ public class ExtensionLoader<T> {
     }
 
     // 这个函数有2个功能
-    // 当是 ExtensionFactory 的 ExtensionLoad 实例调用时，会返回 AdaptiveExtensionFactory 实例，用以给其他类的注入工厂 objectFactory 赋值
-    // 当是 其他接口 的 ExtensionLoad 实例调用时，会返回 dubbo 写的一个实现类，并用上面的objectFactory注入bean
+    // 当 ExtensionFactory 的 ExtensionLoad 实例调用时，会返回 AdaptiveExtensionFactory 实例，用以给其他类的注入工厂 objectFactory 赋值
+    // 当 其他接口 的 ExtensionLoad 实例调用时，会返回 dubbo 写的一个实现类，并用上面的objectFactory注入bean
     @SuppressWarnings("unchecked")
     public T getAdaptiveExtension() {
         Object instance = cachedAdaptiveInstance.get();
