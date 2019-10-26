@@ -114,6 +114,7 @@ public class ExtensionLoader<T> {
     // 存放实现类实例
     // key: 子类名字，value: 子类实例
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<>();
+    // 接口的实现类中，带有 @Adaptive 注解的类的实例，该实例用来为接口实现类实例注入
     private final Holder<Object> cachedAdaptiveInstance = new Holder<>();
     // 自适应扩展的实现类，只能有一个？？？
     private volatile Class<?> cachedAdaptiveClass = null;
@@ -500,7 +501,8 @@ public class ExtensionLoader<T> {
 
     // 这个函数有2个功能
     // 当是 ExtensionFactory 的 ExtensionLoad 实例调用时，会返回 AdaptiveExtensionFactory 实例，用以给其他类的注入工厂 objectFactory 赋值
-    // 当是 其他接口 的 ExtensionLoad 实例调用时，会返回 dubbo 写的一个实现类，并用上面的objectFactory注入bean
+    // 当是 其他接口 的 ExtensionLoad 实例调用时，会返回 dubbo 写的一个实现类（自适应类）实例，并用上面的objectFactory为该自适应类实例注入能自动注入bean的自适应类的bean（有点绕）
+    // 总之，这个返回值，是个自适应类的实例，里面注入的也都是自适应类工厂 应该没有完全理解 todo
     @SuppressWarnings("unchecked")
     public T getAdaptiveExtension() {
         Object instance = cachedAdaptiveInstance.get();
