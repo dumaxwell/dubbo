@@ -49,7 +49,7 @@ public class ProtocolConfig extends AbstractConfig {
     private static final long serialVersionUID = 6913423882496634749L;
 
     /**
-     * Protocol name
+     * Protocol name default "dubbo"
      */
     private String name;
 
@@ -64,16 +64,19 @@ public class ProtocolConfig extends AbstractConfig {
     private Integer port;
 
     /**
+     * todo 什么字段
      * Context path
      */
     private String contextpath;
 
     /**
+     * todo 什么用
      * Thread pool
      */
     private String threadpool;
 
     /**
+     * todo 一个service一个线程池吗
      * Thread pool core thread size
      */
     private Integer corethreads;
@@ -99,11 +102,13 @@ public class ProtocolConfig extends AbstractConfig {
     private Integer accepts;
 
     /**
+     * todo 底层协议？
      * Protocol codec
      */
     private String codec;
 
     /**
+     * todo 底层序列化协议？
      * Serialization
      */
     private String serialization;
@@ -134,31 +139,37 @@ public class ProtocolConfig extends AbstractConfig {
     private String accesslog;
 
     /**
+     * todo 记不起来了
      * Transfort
      */
     private String transporter;
 
     /**
+     * todo 啥字段
      * How information is exchanged
      */
     private String exchanger;
 
     /**
+     * todo 线程分配模式
      * Thread dispatch mode
      */
     private String dispatcher;
 
     /**
+     * todo
      * Networker
      */
     private String networker;
 
     /**
+     * todo
      * Sever impl
      */
     private String server;
 
     /**
+     * todo
      * Client impl
      */
     private String client;

@@ -155,6 +155,14 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     @SuppressWarnings("unchecked")
+    // 将对象字段信息添加到 map 中。
+    //
+    // {属性值} 实现上则是通过反射获取目标对象的 getter 方法，并调用该方法获取
+    // {属性名} 然后再通过 getter 方法名解析出
+    //
+    // 最后将 <属性名，属性值> 键值对存入到 map 中
+    //
+    // 比如从方法名 getName 中可解析出属性 name。如果用户传入了属性名前缀，此时需要将属性名加入前缀内容。
     protected static void appendParameters(Map<String, String> parameters, Object config, String prefix) {
         if (config == null) {
             return;
