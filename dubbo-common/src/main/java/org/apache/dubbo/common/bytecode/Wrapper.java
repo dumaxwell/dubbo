@@ -36,6 +36,8 @@ import java.util.regex.Matcher;
  * Wrapper.
  */
 public abstract class Wrapper {
+    // 单例
+    // 接口只有一个实现类实例，且被Wrapper包裹
     private static final Map<Class<?>, Wrapper> WRAPPER_MAP = new ConcurrentHashMap<Class<?>, Wrapper>(); //class wrapper map
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
     private static final String[] OBJECT_METHODS = new String[]{"getClass", "hashCode", "toString", "equals"};
@@ -122,6 +124,7 @@ public abstract class Wrapper {
     }
 
     private static Wrapper makeWrapper(Class<?> c) {
+        // 检测 c 是否为基本类型
         if (c.isPrimitive()) {
             throw new IllegalArgumentException("Can not create wrapper for primitive type: " + c);
         }
@@ -236,15 +239,15 @@ public abstract class Wrapper {
         // make class
         long id = WRAPPER_CLASS_COUNTER.getAndIncrement();
         ClassGenerator cc = ClassGenerator.newInstance(cl);
-        cc.setClassName((Modifier.isPublic(c.getModifiers()) ? Wrapper.class.getName() : c.getName() + "$sw") + id);
+        cc.setClassName((Modifier.isPublic(c.getModifiers()) ? Wrapper.class.getName() : c.getName() + "$sw") + id);// org.apache.dubbo.common.bytecode.Wrapper0
         cc.setSuperClass(Wrapper.class);
 
-        cc.addDefaultConstructor();
-        cc.addField("public static String[] pns;"); // property name array.
-        cc.addField("public static " + Map.class.getName() + " pts;"); // property type map.
-        cc.addField("public static String[] mns;"); // all method name array.
-        cc.addField("public static String[] dmns;"); // declared method name array.
-        for (int i = 0, len = ms.size(); i < len; i++) {
+        cc.addDefaultConstructor(); // mDefaultConstructor = true; return this;
+        cc.addField("public static String[] pns;"); // property name array."public static String[] pns;"
+        cc.addField("public static " + Map.class.getName() + " pts;"); // property type map.public static java.util.Map pts;
+        cc.addField("public static String[] mns;"); // all method name array. public static String[] mns;
+        cc.addField("public static String[] dmns;"); // declared method name array.public static String[] dmns;
+        for (int i = 0, len = ms.size(); i < len; i++) {// public static Class[] mts0;
             cc.addField("public static Class[] mts" + i + ";");
         }
 

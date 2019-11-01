@@ -19,5 +19,7 @@ package org.apache.dubbo.demo;
 public interface DemoService {
 
     String sayHello(String name);
+    sayHello(String name, String name1);
+    hahaha(String name, String name1);
 
 }
