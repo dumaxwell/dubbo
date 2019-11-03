@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import com.sun.xml.internal.bind.v2.TODO;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
@@ -674,6 +673,23 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         }
 
                         // 为服务提供类(ref)生成 Invoker  todo 重点
+                        /**
+                         * Invoker对象经过层层包装，由内到外
+                         *
+                         * 1.demoService.sayHello(String name)
+                         * 2.demoServiceImpl.sayHello(String name)
+                         *
+                         * 3.wrapper.invoke(demoServiceImpl, method name:"sayHello", unknown, Object[]:args)
+                         * javassist会针对每个实现类写对应的代码，该class实现Wrapper，并主要重写invoke()方法。
+                         * 该方法的逻辑就是通过上面传入的参数，调用实现类中的方法
+                         *
+                         * 4.上面的方法，由Invoker类中的doInvoke()方法调用
+                         * JavassistProxyFactory类中默认的实现，就是获取上面的wrapper实例，在调用上面的方法
+                         *
+                         * 5.doInvoke()由invoke()调用
+                         * invoke()中实现了异步等方式 todo
+                         *
+                         */
                         Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(EXPORT_KEY, url.toFullString()));
                         // DelegateProviderMetaDataInvoker 用于持有 Invoker 和 ServiceConfig
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);

@@ -123,6 +123,9 @@ public abstract class Wrapper {
         return ret;
     }
 
+    // 生成的 invokeMethod 方法通过以下条件匹配要调用的方法：
+    // 方法名，入参个数，入参类型
+    // 在通过传入的接口实例，直接调用
     private static Wrapper makeWrapper(Class<?> c) {
         // 检测 c 是否为基本类型
         if (c.isPrimitive()) {

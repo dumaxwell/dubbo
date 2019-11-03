@@ -25,10 +25,20 @@ import org.slf4j.LoggerFactory;
 public class DemoServiceImpl implements DemoService {
     private static final Logger logger = LoggerFactory.getLogger(DemoServiceImpl.class);
 
+    String a = "invoker :interface org.apache.dubbo.demo.DemoService -> zookeeper://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?anyhost=true&application=demo-consumer&bean.name=org.apache.dubbo.demo.DemoService&check=false&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=org.apache.dubbo.demo.DemoService&lazy=false&methods=sayHello&pid=62043&qos.port=33333&register.ip=192.168.3.21&release=&remote.application=demo-provider&side=consumer&sticky=false&timestamp=1572172144921,directory: org.apache.dubbo.registry.integration.RegistryDirectory@5fe8b721";
     @Override
     public String sayHello(String name) {
         logger.info("Hello " + name + ", request from consumer: " + RpcContext.getContext().getRemoteAddress());
         return "Hello " + name + ", response from provider: " + RpcContext.getContext().getLocalAddress();
     }
 
+    @Override
+    public void sayHello(String name, String name1) {
+
+    }
+
+    @Override
+    public void ha(String name, String name1) {
+
+    }
 }
