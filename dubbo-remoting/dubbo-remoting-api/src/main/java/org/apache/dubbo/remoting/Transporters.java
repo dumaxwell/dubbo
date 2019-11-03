@@ -40,6 +40,7 @@ public class Transporters {
         return bind(URL.valueOf(url), handler);
     }
 
+    // 服务端
     public static Server bind(URL url, ChannelHandler... handlers) throws RemotingException {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
@@ -53,6 +54,10 @@ public class Transporters {
         } else {
             handler = new ChannelHandlerDispatcher(handlers);
         }
+
+        // 获取 Transporter 自适应实例：transporter$Adaptive
+        // transporter$Adaptive 会根据传入的 url 决定加载什么类型的 Transporter
+        // NettyTransporter 为例
         return getTransporter().bind(url, handler);
     }
 
@@ -60,6 +65,7 @@ public class Transporters {
         return connect(URL.valueOf(url), handler);
     }
 
+    // 客户端
     public static Client connect(URL url, ChannelHandler... handlers) throws RemotingException {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
@@ -72,6 +78,7 @@ public class Transporters {
         } else {
             handler = new ChannelHandlerDispatcher(handlers);
         }
+
         return getTransporter().connect(url, handler);
     }
 
