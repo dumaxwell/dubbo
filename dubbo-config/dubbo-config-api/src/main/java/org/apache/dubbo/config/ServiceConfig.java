@@ -142,6 +142,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
 
     /**
      * The exported services
+     * 全应用唯一，被导出的Invoker实例，但是写成List怎么用
      */
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
 
