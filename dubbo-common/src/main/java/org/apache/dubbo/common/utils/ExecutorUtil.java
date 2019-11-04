@@ -132,6 +132,7 @@ public class ExecutorUtil {
         String name = url.getParameter(THREAD_NAME_KEY, defaultName);
         name = name + "-" + url.getAddress();
         url = url.addParameter(THREAD_NAME_KEY, name);
+        //dubbo://10.75.16.91:20880/org.apache.dubbo.demo.DemoService?anyhost=true&application=demo-provider&bean.name=org.apache.dubbo.demo.DemoService&bind.ip=10.75.16.91&bind.port=20880&channel.readonly.sent=true&codec=dubbo&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&heartbeat=60000&interface=org.apache.dubbo.demo.DemoService&methods=sayHello,ha&pid=20308&qos.port=22222&release=&side=provider&timestamp=1572828143418
         return url;
     }
 

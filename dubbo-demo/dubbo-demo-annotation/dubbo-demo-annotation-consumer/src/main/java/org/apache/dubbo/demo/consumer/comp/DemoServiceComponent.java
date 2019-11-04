@@ -34,4 +34,13 @@ public class DemoServiceComponent implements DemoService {
         return demoService.sayHello(name);
     }
 
+    @Override
+    public void ha(String name, String name1) {
+
+    }
+
+    @Override
+    public void sayHello(String name, String name1) {
+
+    }
 }

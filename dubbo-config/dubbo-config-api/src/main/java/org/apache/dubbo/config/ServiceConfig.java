@@ -473,7 +473,30 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             String pathKey = URL.buildKey(getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), group, version);
             ProviderModel providerModel = new ProviderModel(pathKey, ref, interfaceClass);
             ApplicationModel.initProviderModel(pathKey, providerModel);
+            // protocolConfig
+            // <dubbo:
+            //      service beanName="org.apache.dubbo.demo.DemoService"
+            //      path="org.apache.dubbo.demo.DemoService"
+            //      ref="org.apache.dubbo.demo.provider.DemoServiceImpl@3918c187"
+            //      prefix="dubbo.service.org.apache.dubbo.demo.DemoService"
+            //      generic="false"
+            //      interface="org.apache.dubbo.demo.DemoService"
+            //      unexported="false"
+            //      exported="true"
+            //      deprecated="false"
+            //      dynamic="true"
+            //      id="org.apache.dubbo.demo.DemoService"
+            //      valid="true"
+            //  />
 
+            // registryURLs.get(0)
+            // registry://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?
+            //      application=demo-provider&
+            //      dubbo=2.0.2&
+            //      pid=20308&
+            //      qos.port=22222&
+            //      registry=zookeeper&
+            //      timestamp=1572827648546
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }
     }
@@ -623,18 +646,33 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         // 构建好 map 后，紧接着是获取上下文路径、主机名以及端口号等信息。
         // 最后将 map 和主机名等数据传给 URL 构造方法创建 URL 对象。需要注意的是，这里出现的 URL 并非 java.net.URL，而是 com.alibaba.dubbo.common.URL
         URL url = new URL(name, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), map);
-
-
-
-
-        // 2. 导出服务
         if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
                 .hasExtension(url.getProtocol())) {
             // 加载 ConfiguratorFactory，并生成 Configurator 实例，然后通过实例配置 url
             url = ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
                     .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
         }
+        // url:
+        // dubbo://10.75.16.91:20880/org.apache.dubbo.demo.DemoService?
+        //      anyhost=true&
+        //      application=demo-provider&
+        //      bean.name=org.apache.dubbo.demo.DemoService&
+        //      bind.ip=10.75.16.91&
+        //      bind.port=20880&
+        //      deprecated=false&
+        //      dubbo=2.0.2&
+        //      dynamic=true&
+        //      generic=false&
+        //      interface=org.apache.dubbo.demo.DemoService&
+        //      methods=sayHello,ha&
+        //      pid=20308&
+        //      qos.port=22222&
+        //      release=&
+        //      side=provider&
+        //      timestamp=1572828143418
 
+
+        // 2. 导出服务
         String scope = url.getParameter(SCOPE_KEY);
         // don't export when none is configured
         // 如果 scope = none，则什么都不做

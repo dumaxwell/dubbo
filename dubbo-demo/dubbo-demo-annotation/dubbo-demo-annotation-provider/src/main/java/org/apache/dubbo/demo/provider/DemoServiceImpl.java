@@ -35,8 +35,13 @@ public class DemoServiceImpl implements DemoService {
         return "Hello " + name + ", response from provider: " + RpcContext.getContext().getLocalAddress();
     }
 
+    @Override
+    public void ha(String name, String name1) {
 
+    }
 
+    @Override
+    public void sayHello(String name, String name1) {
 
-
+    }
 }
