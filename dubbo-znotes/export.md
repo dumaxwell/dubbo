@@ -42,10 +42,11 @@
                      timestamp=1572827648546
          ```   
         2. doExportUrlsFor1Protocol(protocolConfig, registryURLs)
-            3. 生成URL
-            3. 导出到本地
-            3. 导出到远程
-                4.
+            ##### 生成URL
+            ##### 导出到本地
+            
+            ##### 导出到远程
+                4. todo
                 4. 生成invoker
                 4. exporters.add(protocol.export(invoker)) //默认是DubboProtocol.export()  
                     5. DubboExporter exporter = new DubboExporter(invoker,key,exportMap) // key=demoGroup/org.apache.dubbo.demo.DemoService:1.0.1:20880
@@ -96,3 +97,13 @@
                     5. optimizeSerialization(url) // 优化序列化
        
 ##### 注册
+没什么可说的，目标是在zk创建文件节点/${group}/${interface}/providers/${url}
+group:dubbo
+interface:org.apache.dubbo.demo.DemoService
+url:dubbo://
+可使用ZooInspector查看
+总结：创建zk客户端实例，在用实例创建文件路径节点。都是zk的Curator框架的使用。
+
+
+#### 总结
+本节没有什么难点，主要是各种父类子类、包装类、工厂类看的比较难受。再就是Netty的框架、zk框架的代码调用。明天整理下调用顺序，进入下一节的学习了！

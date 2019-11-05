@@ -80,6 +80,9 @@ public class ZookeeperRegistry extends FailbackRegistry {
             group = PATH_SEPARATOR + group;
         }
         this.root = group;
+        // 创建zk客户端，默认为 CuratorZookeeperTransporter
+        // 该方法，在其父类 AbstractZookeeperTransporter 中
+        // zkRegistry 实例创建
         zkClient = zookeeperTransporter.connect(url);
         zkClient.addStateListener(state -> {
             if (state == StateListener.RECONNECTED) {

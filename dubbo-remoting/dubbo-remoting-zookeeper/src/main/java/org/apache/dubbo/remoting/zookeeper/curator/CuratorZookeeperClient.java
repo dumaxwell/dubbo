@@ -71,6 +71,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
             if (authority != null && authority.length() > 0) {
                 builder = builder.authorization("digest", authority.getBytes());
             }
+            // 构建 CuratorFramework 实例
             client = builder.build();
             client.getConnectionStateListenable().addListener(new ConnectionStateListener() {
                 @Override
@@ -84,6 +85,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
                     }
                 }
             });
+            // 启动客户端
             client.start();
             boolean connected = client.blockUntilConnected(timeout, TimeUnit.MILLISECONDS);
             if (!connected) {

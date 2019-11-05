@@ -711,7 +711,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                             registryURL = registryURL.addParameter(PROXY_KEY, proxy);
                         }
 
-                        // 为服务提供类(ref)生成 Invoker  todo 重点
+                        // 为服务提供类(ref)生成 Invoker
                         /**
                          * Invoker对象经过层层包装，由内到外
                          *
