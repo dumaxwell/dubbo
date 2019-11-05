@@ -50,19 +50,49 @@
                 4. exporters.add(protocol.export(invoker)) //默认是DubboProtocol.export()  
                     5. DubboExporter exporter = new DubboExporter(invoker,key,exportMap) // key=demoGroup/org.apache.dubbo.demo.DemoService:1.0.1:20880
                     5. openServer(url) // 启动服务器
-                        6. if(isServer == true) createServer(url)
+                        6. isServer == true，创建服务端 createServer(url)  // todo
                             7. url.get("server") // 默认netty
                             7. 通过 SPI 检测是否存在 server 参数所代表的 Transporter 拓展，不存在则抛出异常
-                            7. 创建ExchangeServer：Exchangers.bind(url, ExchangeHandlerAdapter匿名内部类实例) // 该类是静态工具类 todo 这个handler干嘛用
+                            7. 获取 ExchangeServer 实例：Exchangers.bind(url, ExchangeHandlerAdapter匿名内部类实例) // 该类是静态工具类 todo 这个handler干嘛用
+
+                                                                                    TelnetHandler ——> |
+                                ChannelHandler——>ChannelHandlerAdapter ——> | TelnetHandlerAdapter——>|
+                                    ChannelHandler, TelnetHandler————————>  ExchangeHandler————> |ExchangeHandlerAdapter
+
                                 8. 获取Exchange,默认为HeaderExchanger
-                                8. 调用HeaderExchanger的bind(url, handler)方法创建ExchangeServer实例
+                                8. HeaderExchanger 的bind(url, handler) 方法创建ExchangeServer实例
+
                                     Endpoint,Resetable,IdeleSensible——>Server——>ExchangeServer——>HeaderExchangeServer
+
                                     9. 用handler创建HeaderExchangeHandler实例
                                     9. 用HeaderExchangeHandler实例创建DecodeHandler实例
                                     9. 创建Server实例，Transporters.bind(url,DecodeHandler实例)
                                         10. 获取 Transporter 自适应实例：transporter$Adaptive
                                         10. transporter$Adaptive 根据传入的 url 决定加载什么类型的Transporter，默认/netty4/NettyTransporter
-                                            11. new NettyServer(url, handler/listener)
+                                            11. 返回 new NettyServer(url, handler/listener)
+                                                12. 返回 super(url, ChannelHandlers.wrap(handler, ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)))
+                                                    13. 后面这个参数待分析
+                                                    13. AbstractServer <—— Server <—— Endpoint, Resetable, IdleSensible
+                                                                                   <—— AbstractEndpoint <—— AbstractPeer <—— Endpoint, ChannelHandler
+                                                                                                                           <—— Resetable
+                                                         14. new 出 AbstractServer 实例，handler存入该实例中，并且为属性 ExecutorService 赋值
+                                                            15. doOpen() //模板方法，启动服务器
+                                                                16. 调用 /netty4/NettyServer 的doOpen()方法，启动服务器
+                                                                    17. netty : todo
+                                                                        - 获取channel，绑定ip、端口，添加到channelFuture中
+                                                                        - 关键词：ServerBootStrap，bossGroup，workerGroup,NettyServerHandler
+                                                            15. log : main  INFO transport.AbstractServer:  [DUBBO] Start NettyServer bind /0.0.0.0:20880, export /10.75.16.91:20880, dubbo version: , current host: 10.75.16.91
+                                                            15. 为 AbstractServer 实例的 线程池属性 ExecutorService 赋值
+                                                        14. 返回 AbstractServer 实例
+                                                    13. 返回 AbstractServer 实例
+                                                12. 返回 NettyServer 实例
+                                            11. 返回 Server 实例
+                                        10. 返回 Server 实例
+                                    9. 将创建的 Server 实例放入 HeaderExchangeServer 实例
+                                8. HeaderExchanger 的bind, 返回 (ExchangeServer) HeaderExchangeServer 实例
+                            7. 返回 ExchangeServer 实例
+                        6. 此时创建 server成功，服务已经启动，返回 ExchangeServer 实例
+                    // ————————————————————————————————
                     5. optimizeSerialization(url) // 优化序列化
        
 ##### 注册
