@@ -313,7 +313,7 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     private void openServer(URL url) {
-        // find server.
+        // find server. host:port
         String key = url.getAddress();
         //client can export a service which's only for server to invoke
         boolean isServer = url.getParameter(IS_SERVER_KEY, true);
@@ -353,6 +353,7 @@ public class DubboProtocol extends AbstractProtocol {
         ExchangeServer server;
         try {
             // 创建 ExchangeServer
+            // requestHandler 是 CompletableFuture 类型，当请求来时，由于已经绑定，会将该handler分给线程池处理
             server = Exchangers.bind(url, requestHandler);
         } catch (RemotingException e) {
             throw new RpcException("Fail to start server(url: " + url + ") " + e.getMessage(), e);

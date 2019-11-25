@@ -34,6 +34,7 @@ import java.util.regex.Matcher;
 
 /**
  * Wrapper.
+ * package org.apache.dubbo.common.bytecode.Wrapper0.java
  */
 public abstract class Wrapper {
     // 单例

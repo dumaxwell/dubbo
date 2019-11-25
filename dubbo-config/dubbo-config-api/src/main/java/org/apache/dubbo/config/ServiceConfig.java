@@ -718,14 +718,17 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                          * 1.demoService.sayHello(String name)
                          * 2.demoServiceImpl.sayHello(String name)
                          *
-                         * 3.wrapper.invoke(demoServiceImpl, method name:"sayHello", unknown, Object[]:args)
+                         * 3.wrapper = Wrapper.getWrapper()对实现类/接口包装,该包装用来统一调用方式。
+                         * 包装后可以凭 方法名+参数 调用impl中的方法，方法名+参数 由url传值
+                         *
+                         * 4.wrapper.invoke(demoServiceImpl, method name:"sayHello", unknown, Object[]:args)
                          * javassist会针对每个实现类写对应的代码，该class实现Wrapper，并主要重写invoke()方法。
                          * 该方法的逻辑就是通过上面传入的参数，调用实现类中的方法
                          *
-                         * 4.上面的方法，由Invoker类中的doInvoke()方法调用
+                         * 5.上面的方法，由Invoker类中的doInvoke()方法调用
                          * JavassistProxyFactory类中默认的实现，就是获取上面的wrapper实例，在调用上面的方法
                          *
-                         * 5.doInvoke()由invoke()调用
+                         * 6.doInvoke()由invoke()调用
                          * invoke()中实现了异步等方式 todo
                          *
                          */

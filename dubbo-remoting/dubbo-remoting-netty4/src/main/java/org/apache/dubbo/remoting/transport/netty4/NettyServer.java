@@ -113,7 +113,7 @@ public class NettyServer extends AbstractServer implements Server {
                                 .addLast("handler", nettyServerHandler);
                     }
                 });
-        // bind
+        // 获取socket，绑定
         ChannelFuture channelFuture = bootstrap.bind(getBindAddress());
         channelFuture.syncUninterruptibly();
         channel = channelFuture.channel();
