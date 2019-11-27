@@ -21,6 +21,15 @@
                 1. ServiceConfig 的 doExportUrls()
                     2. loadRegistries() //加载要注册的目标地址，返回url
                     ```
+                           registryURLs.get(0)
+                           registry://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?
+                               application=demo-provider&
+                               dubbo=2.0.2&
+                               pid=20308&
+                               qos.port=22222&
+                               registry=zookeeper&
+                               timestamp=1572827648546
+                               
                            protocolConfig
                            <dubbo:
                                 service beanName="org.apache.dubbo.demo.DemoService"
@@ -37,30 +46,23 @@
                                 valid="true"
                             />
                     
-                           registryURLs.get(0)
-                           registry://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?
-                                application=demo-provider&
-                                dubbo=2.0.2&
-                                pid=20308&
-                                qos.port=22222&
-                                registry=zookeeper&
-                                timestamp=1572827648546
+                           
                     ```   
                     2. ServiceConfig 的 doExportUrlsFor1Protocol(protocolConfig, registryURLs)
                         3. 生成URL
                         3. 本地导出一个exporter // exportLocal(url) //injvm://127.0.0.1/org.apache.dubbo.demo.DemoService?anyhost=true&application=demo-provider&bean.name=org.apache.dubbo.demo.DemoService&bind.ip=10.75.16.91&bind.port=20880&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=org.apache.dubbo.demo.DemoService&methods=sayHello,ha&pid=17736&qos.port=22222&release=&side=provider&timestamp=1572997276343
                             4. Wrapper——>Wrapper0(由dubbo代码生成，重写invoke()方法，统一impl的调用，通过传入：实现类实例，方法名，方法入参数组，调用实现类中的方法)package org.apache.dubbo.common.bytecode.Wrapper0.java。
                             4. Invoker——>AbstractProxyInvoker(invoke()调用doInvoker())——>匿名类(重写doInvoke()方法，该方法调用Wrapper0中的invoke()方法)
-                            4. Exporter——>AbstractExporter——>InjvmExporter。injvmExporter实例保存了上面的invoker实例到实例的exportedMap中 _todo 为啥要搞个map，难道有多个？_
+                            4. Exporter——>AbstractExporter——>InjvmExporter。injvmExporter实例保存了上面的invoker实例到实例的exportedMap中 //todo 为啥要搞个map，难道有多个？
                             4. Protocol(将invoker放入exporter中)——>AbstractProtocol——>InjvmProtocol(主要重写export()方法，返回上面的injvmExporter实例)
                                 5. 这里制造exporter的方法如下：
                                     - ServiceConfig 中的 doExportUrlsFor1Protocol() 有一句 protocol.export(DelegateProviderMetaDataInvoker invoker)
                                     - protocol=Protocol$Adaptive
                                     - 进而调用 ProtocolListenerWrapper.export()
-                                    - 进而调用 ProtocolFilterWrapper.export() // todo
+                                    - 进而调用 ProtocolFilterWrapper.export()
                                      - 如果是注册协议，则调用 RegistryProtocol.export()
                                      - 其他协议，则构造对应 filter 链，调用对应 Protocol。这里是 InjvmProtocol.export()
-                                       // todo 如何构造filter链的 重点
+                                       // todo 如何构造filter链的
                                 5. 层层返回 exporter
                             4. ServiceConfig.exporters中保存上面的exporter实例 //todo 为啥用list，怎么拿出来用，遍历吗？
                         3. 远程导出n个exporter // n是注册中心数量
@@ -80,7 +82,7 @@
                                     - RegistryProtocol.export(invoker)
                                 5. DubboExporter exporter = new DubboExporter(invoker,key,exportMap) // key=demoGroup/org.apache.dubbo.demo.DemoService:1.0.1:20880
                                 5. openServer(url) // 启动服务器
-                                    6. isServer == true，创建服务端 createServer(url)  // todo
+                                    6. isServer == true，创建服务端 createServer(url)
                                         7. url.get("server") // 默认netty
                                         7. 通过 SPI 检测是否存在 server 参数所代表的 Transporter 拓展，不存在则抛出异常
                                         7. 获取 ExchangeServer 实例：Exchangers.bind(url, ExchangeHandlerAdapter匿名内部类实例) // 该类是静态工具类 todo 这个handler干嘛用
@@ -135,6 +137,21 @@ url:dubbo://
 可使用ZooInspector查看
 总结：创建zk客户端实例，在用实例创建文件路径节点。都是zk的Curator框架的使用。
 
+##### Filter链
+###### 生成
+
+###### 调用
+
 
 #### 总结
 本节没有什么难点，主要是各种父类子类、包装类、工厂类看的比较难受。再就是Netty的框架、zk框架的代码调用。明天整理下调用顺序，进入下一节的学习了！
+ 1. 生成url
+ 1. 根据url生成exporter
+ 1. 启动服务或者reset服务，将handler绑定到端口
+ 1. 将路径注册到zk
+ 
+ 
+#### 遗留问题
+ 1. ProtocalFilterWrapper.buildInvokerChain() 中 new CallbackRegistrationInvoker作用。服务调用时看看，全异步调用链https://dubbo.apache.org/zh-cn/blog/dubbo-new-async.html
+ next指针形成的那个链表用于对请求的处理，另一个ArrayList<Filter> 就是在此时执行,拿到结果之后，遍历这个ArrayList，执行其onResponse或者onError方法，如此一来，请求和响应应就会经过所有生效的Filter处理。
+ 

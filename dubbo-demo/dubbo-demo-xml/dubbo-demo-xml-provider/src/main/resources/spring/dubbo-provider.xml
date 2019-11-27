@@ -28,7 +28,15 @@
     <dubbo:protocol name="dubbo"/>
 
     <bean id="demoService" class="org.apache.dubbo.demo.provider.DemoServiceImpl"/>
+    <bean id="maxwellService" class="org.apache.dubbo.demo.provider.MaxwellServiceImpl">
+        <property name="demoService">
+            <ref bean="demoService"/>
+        </property>
+    </bean>
 
     <dubbo:service interface="org.apache.dubbo.demo.DemoService" ref="demoService"/>
+    <dubbo:service interface="org.apache.dubbo.demo.MaxwellService" ref="maxwellService"/>
 
 </beans>
+
+

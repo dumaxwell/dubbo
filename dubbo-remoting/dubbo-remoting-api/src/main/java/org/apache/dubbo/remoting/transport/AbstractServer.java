@@ -138,6 +138,12 @@ public abstract class AbstractServer extends AbstractEndpoint implements Server 
         } catch (Throwable t) {
             logger.error(t.getMessage(), t);
         }
+        /** 原来url:
+         * dubbo://10.75.16.91:20880/org.apache.dubbo.demo.DemoService?anyhost=true&application=demo-provider&bean.name=org.apache.dubbo.demo.DemoService&bind.ip=10.75.16.91&bind.port=20880&channel.readonly.sent=true&codec=dubbo&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&heartbeat=60000&interface=org.apache.dubbo.demo.DemoService&methods=sayHello,ha&pid=5832&qos.port=22222&release=&side=provider&timestamp=1574753107555
+         *
+         * 重置后url：
+         * dubbo://10.75.16.91:20880/org.apache.dubbo.demo.DemoService?anyhost=true&application=demo-provider&bean.name=org.apache.dubbo.demo.MaxwellService&bind.ip=10.75.16.91&bind.port=20880&channel.readonly.sent=true&codec=dubbo&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&heartbeat=60000&interface=org.apache.dubbo.demo.MaxwellService&methods=invokeDemoSayHello&pid=5832&qos.port=22222&release=&side=provider&timestamp=1574753108406
+         */
         super.setUrl(getUrl().addParameters(url.getParameters()));
     }
 
