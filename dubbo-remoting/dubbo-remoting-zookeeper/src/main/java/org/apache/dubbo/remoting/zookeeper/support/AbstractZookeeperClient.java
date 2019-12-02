@@ -67,7 +67,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     @Override
     public void create(String path, boolean ephemeral) {
-        if (!ephemeral) {
+        if (!ephemeral) { // 是否临时节点
             if(persistentExistNodePath.contains(path)){
                 return;
             }

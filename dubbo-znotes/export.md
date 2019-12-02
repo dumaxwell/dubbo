@@ -70,9 +70,10 @@
                             4. ServiceConfig.exporters中保存上面的exporter实例 //todo 为啥用list，怎么拿出来用，遍历吗？
 
                         3. 远程导出n个exporter // n是注册中心数量
-                            - 遍历每个注册中心，该impl实例对每个注册中心生成一个exporter，添加到 ServiceConfig 实例中去，
+                            - 遍历每个注册中心，该impl实例对每个注册中心生成一个exporter，添加到 ServiceConfig 实例中去
+                            - 该url由于Registry开头，先调用RegistryProtocol.export，而后再获取链接中参数 export ，对其中链接调用相应 xxxProtocol.export
                                 ``` 注册中心 url：
-                                    registry://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?application=demo-provider&dubbo=2.0.2&export=dubbo://10.75.16.91:20880/org.apache.dubbo.demo.DemoService?anyhost=true&application=demo-provider&bean.name=org.apache.dubbo.demo.DemoService&bind.ip=10.75.16.91&bind.port=20880&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=org.apache.dubbo.demo.DemoService&methods=sayHello,ha&pid=17736&qos.port=22222&release=&side=provider&timestamp=1572997276343&pid=17736&qos.port=22222&registry=zookeeper&timestamp=1572997027574
+                                    registry://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?application=demo-provider&dubbo=2.0.2&   export=dubbo://10.75.16.91:20880/org.apache.dubbo.demo.DemoService?anyhost=true&application=demo-provider&bean.name=org.apache.dubbo.demo.DemoService&bind.ip=10.75.16.91&bind.port=20880&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=org.apache.dubbo.demo.DemoService&methods=sayHello,ha&pid=17736&qos.port=22222&release=&side=provider&timestamp=1572997276343&pid=17736&qos.port=22222&registry=zookeeper&timestamp=1572997027574
                                 ```
                             4. 前置处理。如：添加监视器链接到url中
                             4. 生成invoker(impl实例,接口类型,${url}) 
@@ -230,6 +231,7 @@ url:dubbo://
  全异步调用链https://dubbo.apache.org/zh-cn/blog/dubbo-new-async.html
  next指针形成的那个链表用于对请求的处理，另一个ArrayList<Filter> 就是在此时执行,拿到结果之后，遍历这个ArrayList，执行其onResponse或者onError方法，如此一来，请求和响应应就会经过所有生效的Filter处理。
  1. 实际没碰到过injvm的调用
+ 1. url中各参数作用
  1. ProtocolListenerWrapper 是如何做到监听服务调用的，是否异步，是否影响性能
  1. ExporterChangeableWrapper exporter = doLocalExport(dInvoker, provider url) 该对象会有一个单线程的线程池 做咩？
  1. resetUrl的用处是什么
