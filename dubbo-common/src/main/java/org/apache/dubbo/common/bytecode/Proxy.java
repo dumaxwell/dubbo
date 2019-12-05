@@ -192,18 +192,67 @@ public abstract class Proxy {
             ccp.addField("private " + InvocationHandler.class.getName() + " handler;");
             ccp.addConstructor(Modifier.PUBLIC, new Class<?>[]{InvocationHandler.class}, new Class<?>[0], "handler=$1;");
             ccp.addDefaultConstructor();
-            Class<?> clazz = ccp.toClass();
+            Class<?> clazz = ccp.toClass(); // 生成 handler 类对象，无需将其实例化
             clazz.getField("methods").set(null, methods.toArray(new Method[0]));
+            /* clazz 类对象 对应的类文件
+            public class org.apache.dubbo.common.bytecode.proxy0 implements org.apache.dubbo.demo.DemoService,com.alibaba.dubbo.rpc.service.EchoService, org.apache.dubbo.common.bytecode.ClassGenerator$DC{
 
+                public static java.lang.reflect.Method[] methods;
+
+                private java.lang.reflect.InvocationHandler handler;
+
+                public <init>(java.lang.reflect.InvocationHandler arg0){
+                    handler=$1;
+                }
+
+                public java.lang.String sayHello(java.lang.String arg0){
+                    Object[] args = new Object[1];
+                    args[0] = ($w)$1;
+                    Object ret = handler.invoke(this, methods[0], args);
+                    return (java.lang.String)ret;
+                }
+
+                public void sayHello(java.lang.String arg0,java.lang.String arg1){
+                    Object[] args = new Object[2];
+                    args[0] = ($w)$1;
+                    args[1] = ($w)$2;
+                    Object ret = handler.invoke(this, methods[1], args);
+                }
+
+                public void ha(java.lang.String arg0,java.lang.String arg1){
+                    Object[] args = new Object[2];
+                    args[0] = ($w)$1;
+                    args[1] = ($w)$2;
+                    Object ret = handler.invoke(this, methods[2], args);
+                }
+
+                public java.lang.Object $echo(java.lang.Object arg0){
+                    Object[] args = new Object[1];
+                    args[0] = ($w)$1;
+                    Object ret = handler.invoke(this, methods[3], args);
+                    return (java.lang.Object)ret;
+                }
+
+            }
+             */
             // create Proxy class.
             String fcn = Proxy.class.getName() + id;
             ccm = ClassGenerator.newInstance(cl);
             ccm.setClassName(fcn);
             ccm.addDefaultConstructor();
             ccm.setSuperClass(Proxy.class);
-            ccm.addMethod("public Object newInstance(" + InvocationHandler.class.getName() + " h){ return new " + pcn + "($1); }");
-            Class<?> pc = ccm.toClass();
-            proxy = (Proxy) pc.newInstance();
+            ccm.addMethod("public Object newInstance(" + InvocationHandler.class.getName() + " h){ return new " + pcn + "($1); }"); // 通过ccp生成的handler类对象进行实例化
+            Class<?> pc = ccm.toClass(); // 生成代理类对象
+            proxy = (Proxy) pc.newInstance(); // 生成代理类实例
+            /* pc类对象对应的 类文件
+
+            public class org.apache.dubbo.common.bytecode.Proxy0 extends org.apache.dubbo.common.bytecode.Proxy implements org.apache.dubbo.common.bytecode.ClassGenerator$DC{
+                public Object newInstance(java.lang.reflect.InvocationHandler h){
+                    return new org.apache.dubbo.common.bytecode.proxy0($1);  // 调用上面的构造方法
+                }
+            }
+
+            */
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {

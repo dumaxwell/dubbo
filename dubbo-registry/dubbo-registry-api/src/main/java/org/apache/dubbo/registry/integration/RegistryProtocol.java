@@ -418,10 +418,14 @@ public class RegistryProtocol implements Protocol {
         Map<String, String> parameters = new HashMap<String, String>(directory.getUrl().getParameters());
         URL subscribeUrl = new URL(CONSUMER_PROTOCOL, parameters.remove(REGISTER_IP_KEY), 0, type.getName(), parameters);
         if (!ANY_VALUE.equals(url.getServiceInterface()) && url.getParameter(REGISTER_KEY, true)) {
+            // consumer://10.75.16.91/org.apache.dubbo.demo.DemoService?application=demo-consumer&category=consumers&check=false&dubbo=2.0.2&interface=org.apache.dubbo.demo.DemoService&lazy=false&methods=sayHello,ha&pid=8556&qos.port=33333&side=consumer&sticky=false&timestamp=1575343803286
             directory.setRegisteredConsumerUrl(getRegisteredConsumerUrl(subscribeUrl, url));
+            // 将接口的消费端注册到zk
             registry.register(directory.getRegisteredConsumerUrl());
+            // 此时zk上 /dubbo/xxx.DemoService/consumers/ 下已存在节点，该节点就是字符串 directory.getRegisteredConsumerUrl()
+            // consumer://10.75.16.91/org.apache.dubbo.demo.DemoService?application=demo-consumer&category=consumers&check=false&dubbo=2.0.2&interface=org.apache.dubbo.demo.DemoService&lazy=false&methods=sayHello,ha&pid=8556&qos.port=33333&side=consumer&sticky=false&timestamp=1575343803286
         }
-        // consumer://10.75.16.91/org.apache.dubbo.demo.DemoService?application=demo-consumer&check=false&dubbo=2.0.2&interface=org.apache.dubbo.demo.DemoService&lazy=false&methods=sayHello,ha&pid=171368&qos.port=33333&side=consumer&sticky=false&timestamp=1575268725058
+            // consumer://10.75.16.91/org.apache.dubbo.demo.DemoService?application=demo-consumer&check=false&dubbo=2.0.2&interface=org.apache.dubbo.demo.DemoService&lazy=false&methods=sayHello,ha&pid=8556&qos.port=33333&side=consumer&sticky=false&timestamp=1575343803286
         directory.buildRouterChain(subscribeUrl);
         directory.subscribe(subscribeUrl.addParameter(CATEGORY_KEY,
                 PROVIDERS_CATEGORY + "," + CONFIGURATORS_CATEGORY + "," + ROUTERS_CATEGORY));
