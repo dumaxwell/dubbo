@@ -392,7 +392,8 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
                             }
                             // 将 map 转化为 refer string 放入url中
                             urls.add(u.addParameterAndEncoded(REFER_KEY, StringUtils.toQueryString(map)));
-                            // registry://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?application=demo-consumer&dubbo=2.0.2&pid=170060&qos.port=33333&refer=application=demo-consumer&check=false&dubbo=2.0.2&interface=org.apache.dubbo.demo.DemoService&lazy=false&methods=sayHello,ha&pid=170060&qos.port=33333&register.ip=10.75.16.91&side=consumer&sticky=false&timestamp=1575268458013&registry=zookeeper&timestamp=1575268565659
+                            // registry://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService?application=demo-consumer&dubbo=2.0.2&pid=170060&qos.port=33333&
+                            // refer=application=demo-consumer&check=false&dubbo=2.0.2&interface=org.apache.dubbo.demo.DemoService&lazy=false&methods=sayHello,ha&pid=170060&qos.port=33333&register.ip=10.75.16.91&side=consumer&sticky=false&timestamp=1575268458013&registry=zookeeper&timestamp=1575268565659
                         }
                     }
                     if (urls.isEmpty()) { // 未配置注册中心，抛异常
