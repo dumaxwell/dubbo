@@ -416,6 +416,13 @@ public class UrlUtils {
                 && (consumerClassifier == null || ANY_VALUE.equals(consumerClassifier) || StringUtils.isEquals(consumerClassifier, providerClassifier));
     }
 
+    /**
+     *
+     * @param pattern 以变量形式 配置 比如 $methodName。param.getParam(methodName)
+     * @param value 运行值
+     * @param param 从这里获取变量值
+     * @return
+     */
     public static boolean isMatchGlobPattern(String pattern, String value, URL param) {
         if (param != null && pattern.startsWith("$")) {
             pattern = param.getRawParameter(pattern.substring(1));
@@ -423,6 +430,12 @@ public class UrlUtils {
         return isMatchGlobPattern(pattern, value);
     }
 
+    /**
+     *
+     * @param pattern 配置 比如：111*222
+     * @param value 运行时值，比如：1117777222（对比通过）
+     * @return
+     */
     public static boolean isMatchGlobPattern(String pattern, String value) {
         if ("*".equals(pattern)) {
             return true;

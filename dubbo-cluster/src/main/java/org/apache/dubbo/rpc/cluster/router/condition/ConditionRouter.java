@@ -214,10 +214,22 @@ public class ConditionRouter extends AbstractRouter {
         return url;
     }
 
+    /**
+     * 规则中 消费端配置 的匹配
+     * @param url 消费端 url
+     * @param invocation 调用参数
+     * @return
+     */
     boolean matchWhen(URL url, Invocation invocation) {
         return CollectionUtils.isEmptyMap(whenCondition) || matchCondition(whenCondition, url, null, invocation);
     }
 
+    /**
+     * 规则中 服务端配置 的匹配
+     * @param url 服务端 url
+     * @param param 消费端 url
+     * @return
+     */
     private boolean matchThen(URL url, URL param) {
         return CollectionUtils.isNotEmptyMap(thenCondition) && matchCondition(thenCondition, url, param, null);
     }
