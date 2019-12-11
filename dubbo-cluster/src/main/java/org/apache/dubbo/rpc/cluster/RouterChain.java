@@ -32,6 +32,8 @@ import java.util.stream.Collectors;
  */
 public class RouterChain<T> {
 
+    // 注册中心返回的所有地址列表，用方法名分类。
+    // todo 什么时候初始化的？method name 是什么样的？应该不是地址列表，是真实的 invoker，一个 method name 对应一个 invokers ，其中是该方法所有可以调用的 invoker
     // full list of addresses from registry, classified by method name.
     private List<Invoker<T>> invokers = Collections.emptyList();
 
