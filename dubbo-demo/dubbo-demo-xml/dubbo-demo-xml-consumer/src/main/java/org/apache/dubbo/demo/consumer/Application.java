@@ -28,6 +28,6 @@ public class Application {
         String hello = demoService.sayHello("world");
         System.out.println("result: " + hello);
 
-        Application.class.wait();
+//        Application.class.wait();
     }
 }
