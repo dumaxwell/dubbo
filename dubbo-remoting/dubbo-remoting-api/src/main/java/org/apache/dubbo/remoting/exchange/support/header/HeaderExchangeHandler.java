@@ -51,7 +51,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
     private final ExchangeHandler handler;
 
     public HeaderExchangeHandler(ExchangeHandler handler) {
-        if (handler == null) {
+        if (handler == null) { // todo 这里的 handler 是如何被赋值为 DubboProtocol 中的成员变量的
             throw new IllegalArgumentException("handler == null");
         }
         this.handler = handler;
@@ -187,7 +187,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                 // handle request.
                 Request request = (Request) message;
                 if (request.isEvent()) {
-                    handlerEvent(channel, request);
+                    handlerEvent(channel, request);// todo 特殊事件有哪些
                 } else {
                     if (request.isTwoWay()) {
                         handleRequest(exchangeChannel, request);
