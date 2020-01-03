@@ -90,8 +90,8 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
     @Override
     public Object decode(Channel channel, InputStream input) throws IOException {
-        ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
-                .deserialize(channel.getUrl(), input);
+        ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType) // hessian2 这里是反序列化的部分
+                .deserialize(channel.getUrl(), input); // hessian-lite.jar
 
         String dubboVersion = in.readUTF();
         request.setVersion(dubboVersion);
@@ -102,8 +102,8 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
         setMethodName(in.readUTF());
         try {
-            Object[] args;
-            Class<?>[] pts;
+            Object[] args; // 入参值
+            Class<?>[] pts; // 入参类型
             String desc = in.readUTF();
             if (desc.length() == 0) {
                 pts = DubboCodec.EMPTY_CLASS_ARRAY;
@@ -113,7 +113,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                 args = new Object[pts.length];
                 for (int i = 0; i < args.length; i++) {
                     try {
-                        args[i] = in.readObject(pts[i]);
+                        args[i] = in.readObject(pts[i]); // 读取一个类实例
                     } catch (Exception e) {
                         if (log.isWarnEnabled()) {
                             log.warn("Decode argument failed: " + e.getMessage(), e);
@@ -123,7 +123,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             }
             setParameterTypes(pts);
 
-            Map<String, String> map = (Map<String, String>) in.readObject(Map.class);
+            Map<String, String> map = (Map<String, String>) in.readObject(Map.class);// 获取url中部分参数 {path=org.apache.dubbo.demo.DemoService, remote.application=demo-consumer, interface=org.apache.dubbo.demo.DemoService, version=0.0.0, timeout=999999999}
             if (map != null && map.size() > 0) {
                 Map<String, String> attachment = getAttachments();
                 if (attachment == null) {
@@ -134,6 +134,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             }
             //decode argument ,may be callback
             for (int i = 0; i < args.length; i++) {
+                // 只有url中有callback信息，才会
                 args[i] = decodeInvocationArgument(channel, this, pts, i, args[i]);
             }
 
