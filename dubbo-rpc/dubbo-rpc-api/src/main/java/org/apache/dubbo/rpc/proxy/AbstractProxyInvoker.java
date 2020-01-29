@@ -109,12 +109,12 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
     }
 
     private CompletableFuture<Object> wrapWithFuture (Object value, Invocation invocation) {
-        if (RpcContext.getContext().isAsyncStarted()) {
+        if (RpcContext.getContext().isAsyncStarted()) { // 这里不懂，如果启动时生成的wrapper 就是同步代码，走到这里时业务代码就已经跑完了
             return ((AsyncContextImpl)(RpcContext.getContext().getAsyncContext())).getInternalFuture();
-        } else if (value instanceof CompletableFuture) {
+        } else if (value instanceof CompletableFuture) { // 启动时 wrapper 生成的就是异步代码
             return (CompletableFuture<Object>) value;
         }
-        return CompletableFuture.completedFuture(value);
+        return CompletableFuture.completedFuture(value); // 同步，且业务代码已经跑完
     }
 
     protected abstract Object doInvoke(T proxy, String methodName, Class<?>[] parameterTypes, Object[] arguments) throws Throwable;

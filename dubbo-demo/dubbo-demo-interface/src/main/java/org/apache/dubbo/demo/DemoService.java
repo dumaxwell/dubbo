@@ -16,11 +16,16 @@
  */
 package org.apache.dubbo.demo;
 
+import java.util.concurrent.CompletableFuture;
+
 public interface DemoService {
 
     String sayHello(String name);
-    //void sayHello(String name); //报错
-    void ha(String name, String name1);
-    void sayHello(String name, String name1);
 
+    //void sayHello(String name); //报错
+//    void ha(String name, String name1);
+//    void sayHello(String name, String name1);
+    default CompletableFuture<String> sayHelloAsync(String name) {
+        return CompletableFuture.completedFuture(sayHello(name));
+    }
 }

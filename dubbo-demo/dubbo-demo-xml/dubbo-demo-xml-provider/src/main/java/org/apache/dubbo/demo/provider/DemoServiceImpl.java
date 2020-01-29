@@ -31,16 +31,21 @@ public class DemoServiceImpl implements DemoService {
     @Override
     public String sayHello(String name) {
         logger.info("Hello " + name + ", request from consumer: " + RpcContext.getContext().getRemoteAddress());
+        try {
+            Thread.sleep(20000l);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return "Hello " + name + ", response from provider: " + RpcContext.getContext().getLocalAddress();
     }
 
-    @Override
-    public void sayHello(String name, String name1) {
-
-    }
-
-    @Override
-    public void ha(String name, String name1) {
-
-    }
+//    @Override
+//    public void sayHello(String name, String name1) {
+//
+//    }
+//
+//    @Override
+//    public void ha(String name, String name1) {
+//
+//    }
 }

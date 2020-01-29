@@ -48,7 +48,7 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
     protected final URL url;
 
     public WrappedChannelHandler(ChannelHandler handler, URL url) {
-        this.handler = handler;
+        this.handler = handler; // tood 看下handler如何初始化的，如何与channel绑定
         this.url = url;
         executor = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
 
